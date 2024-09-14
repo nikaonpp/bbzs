@@ -127,7 +127,24 @@ local function startgame()
                 player.Character.HumanoidRootPart.CFrame = CFrame.new(position)
             end
         end
+        -- Função para mover o jogador para frente
+local function moveForward(duration)
+    local player = game.Players.LocalPlayer
+    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+        local humanoid = player.Character.Humanoid
+        local startTime = tick()
+        local moveDirection = player.Character.HumanoidRootPart.CFrame.LookVector  -- Mover para frente
 
+        while tick() - startTime < duration do
+            humanoid:Move(moveDirection, false)
+            wait(0)
+        end
+
+        -- Parar movimento após o tempo
+        humanoid:Move(Vector3.new(), false)
+    end
+end
+        moveBackward(5)  -- Mover para trás por 5 segundos
         wait(20)
 
         -- Coordenadas para teleportar
