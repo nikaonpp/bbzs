@@ -74,17 +74,21 @@ local function startgame()
 
     local personagemNome = personagem.Name
     local doors = personagem:FindFirstChild("Doors")
-    if not doors then
-        warn("Doors não encontrado.")
-        return
+
+    -- Verificar continuamente se a porta 'MainDoor' aparece
+    local mainDoor
+    while not mainDoor do
+        mainDoor = doors and doors:FindFirstChild("MainDoor")
+        if mainDoor then
+            print("MainDoor encontrada. Aguardando 10 segundos para continuar...")
+            wait(10)  -- Esperar 10 segundos após encontrar a porta
+        else
+            print("MainDoor ainda não encontrada. Tentando novamente em 1 segundo.")
+            wait(1)  -- Esperar 1 segundo antes de tentar novamente
+        end
     end
 
-    local mainDoor = doors:FindFirstChild("MainDoor")
-    if not mainDoor then
-        warn("MainDoor não encontrado.")
-        return
-    end
-
+    -- Prosseguir após encontrar e aguardar 10 segundos
     local workingParts = mainDoor:FindFirstChild("WorkingParts")
     if not workingParts then
         warn("WorkingParts não encontrado.")
@@ -120,6 +124,29 @@ local function startgame()
         teleportarParaPorta()
         wait(5)  -- Esperar um pouco para garantir que o teleport foi concluído
 
+        -- Função para mover o personagem para frente por 3 segundos
+        local function moverParaFrente()
+            local personagem = game.Players.LocalPlayer.Character
+            if personagem and personagem:FindFirstChild("Humanoid") then
+                local humanoid = personagem.Humanoid
+                local moveTime = 3  -- Tempo em segundos que o personagem andará
+                local startTime = tick()  -- Marcar o tempo de início
+
+                -- Loop para mover o personagem para frente durante o tempo especificado
+                while tick() - startTime < moveTime do
+                    humanoid:Move(Vector3.new(0, 0, -1))  -- Continuar movendo para frente
+                    wait(0.1)  -- Pequeno intervalo para manter o movimento
+                end
+
+                humanoid:Move(Vector3.new(0, 0, 0))  -- Parar o movimento
+            else
+                warn("Humanoid não encontrado.")
+            end
+        end
+
+        -- Chame a função para mover o personagem para frente
+        moverParaFrente()
+
         -- Função para teleportar o jogador
         local function teleportPlayer(position)
             local player = game.Players.LocalPlayer
@@ -140,6 +167,8 @@ local function startgame()
         warn("A porta não é um objeto válido para interagir.")
     end
 end
+
+
 
 
 
