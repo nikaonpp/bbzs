@@ -51,8 +51,48 @@ local function backevent()
 end
 
 local function startgame()
+    -- Encontre o objeto "HouseInteriors" e o personagem dinamicamente
+    local workspace = game:GetService("Workspace")
+    local houseInteriors = workspace:FindFirstChild("HouseInteriors")
+    if not houseInteriors then
+        warn("HouseInteriors não encontrado.")
+        return
+    end
+
+    local blueprint = houseInteriors:FindFirstChild("blueprint")
+    if not blueprint then
+        warn("blueprint não encontrado.")
+        return
+    end
+
+    -- Encontrar o personagem dinamicamente
+    local personagem = blueprint:FindFirstChildOfClass("Model")
+    if not personagem then
+        warn("Personagem não encontrado.")
+        return
+    end
+
+    local personagemNome = personagem.Name
+    local doors = personagem:FindFirstChild("Doors")
+    if not doors then
+        warn("Doors não encontrado.")
+        return
+    end
+
+    local mainDoor = doors:FindFirstChild("MainDoor")
+    if not mainDoor then
+        warn("MainDoor não encontrado.")
+        return
+    end
+
+    local workingParts = mainDoor:FindFirstChild("WorkingParts")
+    if not workingParts then
+        warn("WorkingParts não encontrado.")
+        return
+    end
+
     -- Encontre e renomeie o objeto NoAutoOpen para Autoopen
-    local configuracao = game:GetService("Workspace").HouseInteriors.blueprint.pokasbolas201.Doors.MainDoor.WorkingParts.Configuration.NoAutoOpen
+    local configuracao = workingParts:FindFirstChild("Configuration"):FindFirstChild("NoAutoOpen")
     if configuracao then
         configuracao.Name = "Autoopen"
         print("Objeto renomeado para Autoopen")
@@ -62,7 +102,7 @@ local function startgame()
     end
 
     -- Encontre a porta
-    local porta = game:GetService("Workspace").HouseInteriors.blueprint.pokasbolas201.Doors.MainDoor.WorkingParts.TouchToEnter
+    local porta = workingParts:FindFirstChild("TouchToEnter")
     if porta:IsA("Part") or porta:IsA("Model") then
         -- Função para teletransportar o personagem para a porta
         local function teleportarParaPorta()
@@ -87,7 +127,7 @@ local function startgame()
                 player.Character.HumanoidRootPart.CFrame = CFrame.new(position)
             end
         end
-		wait(10)
+
         -- Função para mover o jogador para trás
         local function moveBackward(duration)
             local player = game.Players.LocalPlayer
@@ -117,6 +157,8 @@ local function startgame()
         warn("A porta não é um objeto válido para interagir.")
     end
 end
+
+
 
 -- Função para teletransportar para as moedas e, em seguida, para LegendaryChest
 local function teleportToCoinsAndThenLegendaryChest()
