@@ -51,7 +51,7 @@ local function backevent()
 end
 
 local function startgame()
-    wait(15)
+    wait(30)
     -- Função auxiliar para encontrar um objeto com tentativas repetidas
     local function waitForObject(parent, objectName)
         local object = nil
