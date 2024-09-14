@@ -118,7 +118,7 @@ local function startgame()
 
         -- Chame a função para teletransportar o personagem para a porta
         teleportarParaPorta()
-        wait(1)  -- Esperar um pouco para garantir que o teleport foi concluído
+        wait(5)  -- Esperar um pouco para garantir que o teleport foi concluído
 
         -- Função para teleportar o jogador
         local function teleportPlayer(position)
