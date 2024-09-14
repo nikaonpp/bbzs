@@ -128,7 +128,7 @@ local function startgame()
             end
         end
 
-        wait(10)
+        wait(20)
 
         -- Coordenadas para teleportar
         local teleportPosition = Vector3.new(-5.04932, 3534.82, 8077.69)
