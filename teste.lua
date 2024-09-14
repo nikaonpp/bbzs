@@ -51,62 +51,61 @@ local function backevent()
 end
 
 local function startgame()
-    -- Encontre o objeto "HouseInteriors" e o personagem dinamicamente
-    local workspace = game:GetService("Workspace")
-    local houseInteriors = workspace:FindFirstChild("HouseInteriors")
-    if not houseInteriors then
-        warn("HouseInteriors não encontrado.")
-        return
+    wait(15)
+    -- Função auxiliar para encontrar um objeto com tentativas repetidas
+    local function waitForObject(parent, objectName)
+        local object = nil
+        while not object do
+            object = parent:FindFirstChild(objectName)
+            if object then
+                print(objectName .. " encontrado.")
+            else
+                warn(objectName .. " não encontrado. Tentando novamente em 3 segundos.")
+                wait(3)  -- Esperar 3 segundos antes de tentar novamente
+            end
+        end
+        return object
     end
 
-    local blueprint = houseInteriors:FindFirstChild("blueprint")
-    if not blueprint then
-        warn("blueprint não encontrado.")
-        return
-    end
+    -- Encontre o objeto "HouseInteriors" e o personagem dinamicamente
+    local workspace = game:GetService("Workspace")
+    
+    -- Usar a função waitForObject para procurar HouseInteriors
+    local houseInteriors = waitForObject(workspace, "HouseInteriors")
+
+    -- Usar a função waitForObject para procurar blueprint
+    local blueprint = waitForObject(houseInteriors, "blueprint")
 
     -- Encontrar o personagem dinamicamente
     local personagem = blueprint:FindFirstChildOfClass("Model")
-    if not personagem then
-        warn("Personagem não encontrado.")
-        return
+    while not personagem do
+        warn("Personagem não encontrado. Tentando novamente em 3 segundos.")
+        wait(3)
+        personagem = blueprint:FindFirstChildOfClass("Model")
     end
 
     local personagemNome = personagem.Name
-    local doors = personagem:FindFirstChild("Doors")
+    local doors = waitForObject(personagem, "Doors")
 
     -- Verificar continuamente se a porta 'MainDoor' aparece
-    local mainDoor
-    while not mainDoor do
-        mainDoor = doors and doors:FindFirstChild("MainDoor")
-        if mainDoor then
-            print("MainDoor encontrada. Aguardando 10 segundos para continuar...")
-            wait(10)  -- Esperar 10 segundos após encontrar a porta
-        else
-            print("MainDoor ainda não encontrada. Tentando novamente em 1 segundo.")
-            wait(1)  -- Esperar 1 segundo antes de tentar novamente
-        end
-    end
+    local mainDoor = waitForObject(doors, "MainDoor")
+    
+    -- Aguardar 10 segundos antes de continuar após encontrar a MainDoor
+    print("MainDoor encontrada. Aguardando 10 segundos para continuar...")
+    wait(10)
 
     -- Prosseguir após encontrar e aguardar 10 segundos
-    local workingParts = mainDoor:FindFirstChild("WorkingParts")
-    if not workingParts then
-        warn("WorkingParts não encontrado.")
-        return
-    end
+    local workingParts = waitForObject(mainDoor, "WorkingParts")
 
     -- Encontre e renomeie o objeto NoAutoOpen para Autoopen
-    local configuracao = workingParts:FindFirstChild("Configuration"):FindFirstChild("NoAutoOpen")
+    local configuracao = waitForObject(workingParts:WaitForChild("Configuration"), "NoAutoOpen")
     if configuracao then
         configuracao.Name = "Autoopen"
         print("Objeto renomeado para Autoopen")
-    else
-        warn("O objeto NoAutoOpen não foi encontrado.")
-        return
     end
 
     -- Encontre a porta
-    local porta = workingParts:FindFirstChild("TouchToEnter")
+    local porta = waitForObject(workingParts, "TouchToEnter")
     if porta:IsA("Part") or porta:IsA("Model") then
         -- Função para teletransportar o personagem para a porta
         local function teleportarParaPorta()
@@ -167,6 +166,7 @@ local function startgame()
         warn("A porta não é um objeto válido para interagir.")
     end
 end
+
 
 
 
