@@ -179,7 +179,7 @@ local function continuouslyCheckForEventStart()
 end
 
 startgame()
-wait(5)
+wait(20)
 -- Chama a função backevent no início para teleportar o jogador para o barco
 backevent()
 
