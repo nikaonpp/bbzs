@@ -136,7 +136,6 @@ local function startgame()
         -- Teleportar e mover
         teleportPlayer(teleportPosition)
         wait(1)  -- Esperar um pouco para garantir que o teleport foi concluído
-        moveBackward(5)  -- Mover para trás por 5 segundos
     else
         warn("A porta não é um objeto válido para interagir.")
     end
