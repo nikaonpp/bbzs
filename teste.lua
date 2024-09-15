@@ -1,17 +1,27 @@
 -- Função para teletransportar o jogador para a posição das moedas
-local function teleportToCoins()
+local function flyToCoins()
     local collectibles = game:GetService("Workspace"):GetDescendants()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    local flySpeed = 100  -- Velocidade do fly
     local itemFound = false
 
     for _, item in pairs(collectibles) do
         if item.Name == "Coin" and item:IsA("BasePart") then
             itemFound = true
-            humanoidRootPart.CFrame = item.CFrame + Vector3.new(0, 1, 0)
-            print("Teleportado para Coin: ", item.Name)
-            wait(0.2)
+            print("Indo em direção à Coin: ", item.Name)
+
+            -- Calcula a direção do fly em relação à coin
+            local direction = (item.Position - humanoidRootPart.Position).unit
+            local distance = (item.Position - humanoidRootPart.Position).magnitude
+
+            -- Move o personagem em direção à Coin
+            while distance > 5 do  -- Aproxima-se até estar a 5 unidades de distância
+                humanoidRootPart.CFrame = humanoidRootPart.CFrame + direction * flySpeed * game:GetService("RunService").Heartbeat:Wait()
+                distance = (item.Position - humanoidRootPart.Position).magnitude
+            end
+            wait(0.2)  -- Pequena pausa antes de ir para a próxima coin
         end
     end
 
@@ -20,20 +30,30 @@ local function teleportToCoins()
     end
 end
 
--- Função para teletransportar o jogador para a posição dos LegendaryChest
-local function teleportToLegendaryChest()
+-- Função para voar até LegendaryChest
+local function flyToLegendaryChest()
     local collectibles = game:GetService("Workspace"):GetDescendants()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    local flySpeed = 100  -- Velocidade do fly
     local itemFound = false
 
     for _, item in pairs(collectibles) do
         if item.Name == "LegendaryChest" and item:IsA("BasePart") then
             itemFound = true
-            humanoidRootPart.CFrame = item.CFrame + Vector3.new(0, 1, 0)
-            print("Teleportado para LegendaryChest: ", item.Name)
-            wait(0.2)
+            print("Indo em direção ao LegendaryChest: ", item.Name)
+
+            -- Calcula a direção do fly em relação ao LegendaryChest
+            local direction = (item.Position - humanoidRootPart.Position).unit
+            local distance = (item.Position - humanoidRootPart.Position).magnitude
+
+            -- Move o personagem em direção ao LegendaryChest
+            while distance > 5 do  -- Aproxima-se até estar a 5 unidades de distância
+                humanoidRootPart.CFrame = humanoidRootPart.CFrame + direction * flySpeed * game:GetService("RunService").Heartbeat:Wait()
+                distance = (item.Position - humanoidRootPart.Position).magnitude
+            end
+            wait(0.2)  -- Pequena pausa antes de ir para o próximo item
         end
     end
 
@@ -175,10 +195,10 @@ end
 -- Função para teletransportar para as moedas e, em seguida, para LegendaryChest
 local function teleportToCoinsAndThenLegendaryChest()
     print("Iniciando teleporte para Coins.")
-    teleportToCoins()
+    flyToCoins()
     wait(0.3)
     print("Iniciando teleporte para LegendaryChest.")
-    teleportToLegendaryChest()
+    flyToLegendaryChest()
     wait(10)
     backevent()
 end
@@ -206,7 +226,7 @@ local function continuouslyCheckForEventStart()
     end
 end
 
-startgame()
+--startgame()
 wait(20)
 -- Chama a função backevent no início para teleportar o jogador para o barco
 backevent()
