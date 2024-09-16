@@ -19,21 +19,27 @@ local function createButton()
     button.BackgroundColor3 = Color3.new(0, 1, 0)  -- Cor verde para indicar inativo
     button.Parent = screenGui
     
-    -- Função para alternar o estado do código
-    local function toggleCode()
-        active = not active  -- Alternar o estado
-        if active then
-            button.Text = "Parar"
-            button.BackgroundColor3 = Color3.new(1, 0, 0)  -- Cor vermelha para indicar ativo
-            print("Código ativado")
-            backevent()
-            continuouslyCheckForEventStart()  -- Iniciar a execução
-        else
-            button.Text = "Ativar"
-            button.BackgroundColor3 = Color3.new(0, 1, 0)  -- Cor verde para indicar inativo
-            print("Código parado")
-        end
+-- Função para alternar o estado do código
+local function toggleCode()
+    active = not active  -- Alternar o estado
+    if active then
+        button.Text = "Parar"
+        button.BackgroundColor3 = Color3.new(1, 0, 0)  -- Cor vermelha para indicar ativo
+        print("Código ativado")
+        backevent()
+
+        -- Usar coroutines para executar funções em paralelo
+        local co1 = coroutine.create(continuouslyCheckForEventStart)
+        local co2 = coroutine.create(checkTimerLabelContinuously)
+        
+        coroutine.resume(co1)
+        coroutine.resume(co2)
+    else
+        button.Text = "Ativar"
+        button.BackgroundColor3 = Color3.new(0, 1, 0)  -- Cor verde para indicar inativo
+        print("Código parado")
     end
+end
     
     -- Conectar a função de alternância ao clique no botão
     button.MouseButton1Click:Connect(toggleCode)
@@ -56,7 +62,7 @@ local function flyToCoins()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    local flySpeed = 500  -- Velocidade do fly
+    local flySpeed = 450  -- Velocidade do fly
     local itemFound = false
     local startTime = tick()  -- Marca o início da função
 
@@ -98,7 +104,7 @@ local function flyToCoins()
                     break
                 end
             end
-            wait(0.2)  -- Pequena pausa antes de ir para a próxima coin
+            wait(0.3)  -- Pequena pausa antes de ir para a próxima coin
         end
     end
 
@@ -173,8 +179,95 @@ function continuouslyCheckForEventStart()
     end
 end
 
--- Chama a função backevent no início para teleportar o jogador para o barco
-backevent()
+-- Função para checar o TimerLabel e executar o comando se o tempo estiver entre 4 e 17 minutos
+local function checkTimerLabel()
+    if not active then return end  -- Verificar se o código está ativo
+
+    local paths = {"MainMap/Default", "MainMap!Default"}
+    local label
+
+    -- Tenta acessar o TimerLabel nos caminhos especificados
+    for _, path in ipairs(paths) do
+        local success, result = pcall(function()
+            return game:GetService("Workspace").Interiors[path].Event.Ocean2024Exterior.JoinZone.Billboard.BillboardGui.TimerLabel
+        end)
+
+        if success and result then
+            label = result
+            break
+        end
+    end
+
+    -- Verifica se encontrou o TimerLabel
+    if label and string.find(label.Text, ":") then
+        -- Extrai o tempo restante do texto
+        local timeRemaining = string.match(label.Text, "%d%d:%d%d")
+        
+        -- Divide o tempo em minutos e segundos
+        local minutes, seconds = string.match(timeRemaining, "(%d%d):(%d%d)")
+        minutes = tonumber(minutes)
+        seconds = tonumber(seconds)
+
+        -- Mostra o tempo no console
+        print("Tempo restante:", minutes .. ":" .. seconds)
+
+        -- Se o tempo estiver entre 4 e 17 minutos, executa a compra
+        if minutes >= 4 and minutes < 17 then
+            print("Tentando realizar a compra no jogo...")
+            game:GetService("ReplicatedStorage").API:FindFirstChild("OceanAPI/AttemptPurchaseDive"):InvokeServer()
+        elseif minutes < 4 then
+            print("Tempo menor que 4 minutos, aguardando.")
+        elseif minutes >= 17 then
+            print("Tempo maior que 17 minutos, aguardando.")
+        end
+    else
+        print("TimerLabel não encontrado ou não corresponde ao padrão.")
+    end
+end
+
+-- Função para checar o TimerLabel continuamente a cada 30 segundos
+function checkTimerLabelContinuously()
+    while active do
+        checkTimerLabel()
+        wait(30)  -- Intervalo de 30 segundos
+    end
+end
+
+
+
+
+
 
 -- Criar o botão ao iniciar o código
 createButton()
+loadstring(game:HttpGet(('https://raw.githubusercontent.com/ReQiuYTPL/hub/main/ReQiuYTPLHub.lua'), true))()
+-- Script para esconder ou mostrar elementos
+-- Função inicial executada ao iniciar o script
+if _G.hideUnHide then
+    _G.hideUnHide()
+end
+
+-- Criando um botão na tela para executar a função novamente
+local ScreenGui = Instance.new("ScreenGui")
+local TextButton = Instance.new("TextButton")
+
+-- Propriedades da ScreenGui
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Propriedades do TextButton
+TextButton.Parent = ScreenGui
+TextButton.Text = "Toggle Hide/UnHide"
+TextButton.Size = UDim2.new(0, 200, 0, 50)
+TextButton.Position = UDim2.new(1, -210, 1, -60)  -- Alinhado à direita e 60 pixels acima do fundo
+TextButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton.Font = Enum.Font.SourceSans
+TextButton.TextSize = 24
+
+-- Função ao clicar no botão
+TextButton.MouseButton1Click:Connect(function()
+    if _G.hideUnHide then
+        _G.hideUnHide()
+    end
+end)
+
