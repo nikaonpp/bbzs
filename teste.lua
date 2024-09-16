@@ -1,13 +1,84 @@
+local active = false  -- Variável para controlar se o código está ativo ou não
+
+-- Função para criar o botão na tela
+local function createButton()
+    local player = game.Players.LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+    
+    -- Criar uma nova tela GUI
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Parent = playerGui
+    screenGui.Name = "ControlButtonGui"
+
+    -- Criar um botão
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0, 150, 0, 50)  -- Tamanho do botão
+    button.Position = UDim2.new(1, -160, 1, -60)  -- Posição no canto inferior direito
+    button.AnchorPoint = Vector2.new(1, 1)  -- Âncora no canto inferior direito
+    button.Text = "Ativar"  -- Texto inicial do botão
+    button.BackgroundColor3 = Color3.new(0, 1, 0)  -- Cor verde para indicar inativo
+    button.Parent = screenGui
+    
+    -- Função para alternar o estado do código
+    local function toggleCode()
+        active = not active  -- Alternar o estado
+        if active then
+            button.Text = "Parar"
+            button.BackgroundColor3 = Color3.new(1, 0, 0)  -- Cor vermelha para indicar ativo
+            print("Código ativado")
+            backevent()
+            continuouslyCheckForEventStart()  -- Iniciar a execução
+        else
+            button.Text = "Ativar"
+            button.BackgroundColor3 = Color3.new(0, 1, 0)  -- Cor verde para indicar inativo
+            print("Código parado")
+        end
+    end
+    
+    -- Conectar a função de alternância ao clique no botão
+    button.MouseButton1Click:Connect(toggleCode)
+end
+
+-- Função para teletransportar o jogador de volta para o barco
+function backevent()
+    if not active then return end  -- Verificar se o código está ativo
+    local player = game.Players.LocalPlayer
+    local humanoidRootPart = player.Character:WaitForChild("HumanoidRootPart")
+    local targetPosition = Vector3.new(-350.322, 32.2789, -1413.78)
+    humanoidRootPart.CFrame = CFrame.new(targetPosition)
+    print("Voltando para o barco")
+end
+
 -- Função para teletransportar o jogador para a posição das moedas
 local function flyToCoins()
+    if not active then return end  -- Verificar se o código está ativo
     local collectibles = game:GetService("Workspace"):GetDescendants()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    local flySpeed = 100  -- Velocidade do fly
+    local flySpeed = 500  -- Velocidade do fly
     local itemFound = false
+    local startTime = tick()  -- Marca o início da função
 
+    -- Desabilita a colisão de todos os itens que não sejam Coin, LegendaryChest ou Chest
     for _, item in pairs(collectibles) do
+        if item:IsA("BasePart") then
+            if item.Name ~= "Coin" and item.Name ~= "LegendaryChest" and item.Name ~= "Chest" then
+                item.CanCollide = false  -- Remove a colisão
+            else
+                item.CanCollide = true   -- Mantém a colisão para Coin, LegendaryChest e Chest
+            end
+        end
+    end
+
+    -- Teletransporta o jogador para as Coins
+    for _, item in pairs(collectibles) do
+        -- Verifica se já passou mais de 90 segundos
+        if tick() - startTime > 90 then
+            print("Tempo limite de 90 segundos atingido, interrompendo a coleta.")
+            break
+        end
+
         if item.Name == "Coin" and item:IsA("BasePart") then
             itemFound = true
             print("Indo em direção à Coin: ", item.Name)
@@ -20,6 +91,12 @@ local function flyToCoins()
             while distance > 5 do  -- Aproxima-se até estar a 5 unidades de distância
                 humanoidRootPart.CFrame = humanoidRootPart.CFrame + direction * flySpeed * game:GetService("RunService").Heartbeat:Wait()
                 distance = (item.Position - humanoidRootPart.Position).magnitude
+
+                -- Verifica se o tempo limite foi atingido durante o movimento
+                if tick() - startTime > 90 then
+                    print("Tempo limite de 90 segundos atingido, interrompendo a coleta.")
+                    break
+                end
             end
             wait(0.2)  -- Pequena pausa antes de ir para a próxima coin
         end
@@ -32,11 +109,12 @@ end
 
 -- Função para voar até LegendaryChest
 local function flyToLegendaryChest()
+    if not active then return end  -- Verificar se o código está ativo
     local collectibles = game:GetService("Workspace"):GetDescendants()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    local flySpeed = 100  -- Velocidade do fly
+    local flySpeed = 450  -- Velocidade do fly
     local itemFound = false
 
     for _, item in pairs(collectibles) do
@@ -54,6 +132,7 @@ local function flyToLegendaryChest()
                 distance = (item.Position - humanoidRootPart.Position).magnitude
             end
             wait(0.2)  -- Pequena pausa antes de ir para o próximo item
+            backevent()
         end
     end
 
@@ -62,148 +141,16 @@ local function flyToLegendaryChest()
     end
 end
 
-local function backevent()
-    local player = game.Players.LocalPlayer
-    local humanoidRootPart = player.Character:WaitForChild("HumanoidRootPart")
-    local targetPosition = Vector3.new(-350.322, 32.2789, -1413.78)
-    humanoidRootPart.CFrame = CFrame.new(targetPosition)
-    print("Voltando para o barco")
-end
-
-local function startgame()
-    wait(30)
-    -- Função auxiliar para encontrar um objeto com tentativas repetidas
-    local function waitForObject(parent, objectName)
-        local object = nil
-        while not object do
-            object = parent:FindFirstChild(objectName)
-            if object then
-                print(objectName .. " encontrado.")
-            else
-                warn(objectName .. " não encontrado. Tentando novamente em 3 segundos.")
-                wait(3)  -- Esperar 3 segundos antes de tentar novamente
-            end
-        end
-        return object
-    end
-
-    -- Encontre o objeto "HouseInteriors" e o personagem dinamicamente
-    local workspace = game:GetService("Workspace")
-    
-    -- Usar a função waitForObject para procurar HouseInteriors
-    local houseInteriors = waitForObject(workspace, "HouseInteriors")
-
-    -- Usar a função waitForObject para procurar blueprint
-    local blueprint = waitForObject(houseInteriors, "blueprint")
-
-    -- Encontrar o personagem dinamicamente
-    local personagem = blueprint:FindFirstChildOfClass("Model")
-    while not personagem do
-        warn("Personagem não encontrado. Tentando novamente em 3 segundos.")
-        wait(3)
-        personagem = blueprint:FindFirstChildOfClass("Model")
-    end
-
-    local personagemNome = personagem.Name
-    local doors = waitForObject(personagem, "Doors")
-
-    -- Verificar continuamente se a porta 'MainDoor' aparece
-    local mainDoor = waitForObject(doors, "MainDoor")
-    
-    -- Aguardar 10 segundos antes de continuar após encontrar a MainDoor
-    print("MainDoor encontrada. Aguardando 10 segundos para continuar...")
-    wait(10)
-
-    -- Prosseguir após encontrar e aguardar 10 segundos
-    local workingParts = waitForObject(mainDoor, "WorkingParts")
-
-    -- Encontre e renomeie o objeto NoAutoOpen para Autoopen
-    local configuracao = waitForObject(workingParts:WaitForChild("Configuration"), "NoAutoOpen")
-    if configuracao then
-        configuracao.Name = "Autoopen"
-        print("Objeto renomeado para Autoopen")
-    end
-
-    -- Encontre a porta
-    local porta = waitForObject(workingParts, "TouchToEnter")
-    if porta:IsA("Part") or porta:IsA("Model") then
-        -- Função para teletransportar o personagem para a porta
-        local function teleportarParaPorta()
-            local personagem = game.Players.LocalPlayer.Character
-            if personagem then
-                local portaPosicao = porta.Position
-                personagem:MoveTo(portaPosicao)
-            else
-                warn("O personagem não foi encontrado.")
-                return
-            end
-        end
-
-        -- Chame a função para teletransportar o personagem para a porta
-        teleportarParaPorta()
-        wait(5)  -- Esperar um pouco para garantir que o teleport foi concluído
-
-        -- Função para mover o personagem para frente por 3 segundos
-        local function moverParaFrente()
-            local personagem = game.Players.LocalPlayer.Character
-            if personagem and personagem:FindFirstChild("Humanoid") then
-                local humanoid = personagem.Humanoid
-                local moveTime = 3  -- Tempo em segundos que o personagem andará
-                local startTime = tick()  -- Marcar o tempo de início
-
-                -- Loop para mover o personagem para frente durante o tempo especificado
-                while tick() - startTime < moveTime do
-                    humanoid:Move(Vector3.new(0, 0, -1))  -- Continuar movendo para frente
-                    wait(0.1)  -- Pequeno intervalo para manter o movimento
-                end
-
-                humanoid:Move(Vector3.new(0, 0, 0))  -- Parar o movimento
-            else
-                warn("Humanoid não encontrado.")
-            end
-        end
-
-        -- Chame a função para mover o personagem para frente
-        moverParaFrente()
-
-        -- Função para teleportar o jogador
-        local function teleportPlayer(position)
-            local player = game.Players.LocalPlayer
-            if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                player.Character.HumanoidRootPart.CFrame = CFrame.new(position)
-            end
-        end
-
-        wait(20)
-
-        -- Coordenadas para teleportar
-        local teleportPosition = Vector3.new(-5.04932, 3534.82, 8077.69)
-
-        -- Teleportar e mover
-        teleportPlayer(teleportPosition)
-        wait(1)  -- Esperar um pouco para garantir que o teleport foi concluído
-    else
-        warn("A porta não é um objeto válido para interagir.")
-    end
-end
-
-
-
-
-
-
--- Função para teletransportar para as moedas e, em seguida, para LegendaryChest
 local function teleportToCoinsAndThenLegendaryChest()
+    if not active then return end  -- Verificar se o código está ativo
     print("Iniciando teleporte para Coins.")
     flyToCoins()
     wait(0.3)
-    print("Iniciando teleporte para LegendaryChest.")
-    flyToLegendaryChest()
-    wait(10)
     backevent()
 end
 
-local function checkIfEventStarted()
+function checkIfEventStarted()
+    if not active then return end  -- Verificar se o código está ativo
     local eventStartPosition = Vector3.new(16029.02734375, 7894.48828125, 16013.0146484375)
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
@@ -219,17 +166,15 @@ local function checkIfEventStarted()
     end
 end
 
-local function continuouslyCheckForEventStart()
-    while true do
+function continuouslyCheckForEventStart()
+    while active do  -- Verificar se o código está ativo
         checkIfEventStarted()
         wait(1)
     end
 end
 
---startgame()
-wait(20)
 -- Chama a função backevent no início para teleportar o jogador para o barco
 backevent()
 
--- Inicia a verificação contínua do início do evento
-continuouslyCheckForEventStart()
+-- Criar o botão ao iniciar o código
+createButton()
