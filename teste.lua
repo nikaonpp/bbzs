@@ -65,7 +65,7 @@ local function flyToCoins()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    local flySpeed = 450  -- Velocidade do fly
+    local flySpeed = 100  -- Velocidade do fly
     local itemFound = false
     local startTime = tick()  -- Marca o início da função
 
@@ -97,7 +97,7 @@ local function flyToCoins()
             local distance = (item.Position - humanoidRootPart.Position).magnitude
 
             -- Move o personagem em direção à Coin
-            while distance > 5 do  -- Aproxima-se até estar a 5 unidades de distância
+            while distance > 8 do  -- Aproxima-se até estar a 5 unidades de distância
                 humanoidRootPart.CFrame = humanoidRootPart.CFrame + direction * flySpeed * game:GetService("RunService").Heartbeat:Wait()
                 distance = (item.Position - humanoidRootPart.Position).magnitude
 
@@ -107,7 +107,7 @@ local function flyToCoins()
                     break
                 end
             end
-            wait(0.3)  -- Pequena pausa antes de ir para a próxima coin
+            wait(0.4)  -- Pequena pausa antes de ir para a próxima coin
         end
     end
 
