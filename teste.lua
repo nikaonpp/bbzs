@@ -1,4 +1,7 @@
 local active = false  -- Variável para controlar se o código está ativo ou não
+-- Definir a posição alvo
+local targetPosition = Vector3.new(-350.322, 32.2789, -1413.78)
+local allowedDistance = 10  -- Distância permitida para tentativa de compra
 
 -- Função para criar o botão na tela
 local function createButton()
@@ -120,7 +123,7 @@ local function flyToLegendaryChest()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    local flySpeed = 450  -- Velocidade do fly
+    local flySpeed = 200  -- Velocidade do fly
     local itemFound = false
 
     for _, item in pairs(collectibles) do
@@ -137,7 +140,7 @@ local function flyToLegendaryChest()
                 humanoidRootPart.CFrame = humanoidRootPart.CFrame + direction * flySpeed * game:GetService("RunService").Heartbeat:Wait()
                 distance = (item.Position - humanoidRootPart.Position).magnitude
             end
-            wait(0.2)  -- Pequena pausa antes de ir para o próximo item
+            wait(0.1)  -- Pequena pausa antes de ir para o próximo item
             backevent()
         end
     end
@@ -225,14 +228,28 @@ local function checkTimerLabel()
     end
 end
 
--- Função para checar o TimerLabel continuamente a cada 30 segundos
+-- Função para verificar a distância
+local function isPlayerNearTarget()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local playerPosition = character.PrimaryPart.Position  -- Posição do jogador
+
+    -- Verifica a distância entre a posição do jogador e a posição alvo
+    local distance = (playerPosition - targetPosition).Magnitude
+    return distance <= allowedDistance
+end
+
+-- Função para checar o TimerLabel e tentar a compra continuamente a cada 30 segundos
 function checkTimerLabelContinuously()
     while active do
-        checkTimerLabel()
+        if isPlayerNearTarget() then
+            checkTimerLabel()  -- Tenta comprar apenas se o jogador estiver próximo
+        else
+            print("Jogador está longe da posição alvo. Tentativa de compra bloqueada.")
+        end
         wait(30)  -- Intervalo de 30 segundos
     end
 end
-
 
 
 
