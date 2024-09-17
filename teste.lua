@@ -75,7 +75,8 @@ local function flyToCoins()
             if item.Name ~= "Coin" and item.Name ~= "LegendaryChest" and item.Name ~= "Chest" then
                 item.CanCollide = false  -- Remove a colisão
             else
-                item.CanCollide = true   -- Mantém a colisão para Coin, LegendaryChest e Chest
+                item.CanCollide = false   -- Mantém a colisão para Coin, LegendaryChest e Chest
+                item.Size = Vector3.new(150,150,150)  -- Ajusta o tamanho para 100x100x100
             end
         end
     end
@@ -97,7 +98,7 @@ local function flyToCoins()
             local distance = (item.Position - humanoidRootPart.Position).magnitude
 
             -- Move o personagem em direção à Coin
-            while distance > 8 do  -- Aproxima-se até estar a 5 unidades de distância
+            while distance > 5 do  -- Aproxima-se até estar a 5 unidades de distância
                 humanoidRootPart.CFrame = humanoidRootPart.CFrame + direction * flySpeed * game:GetService("RunService").Heartbeat:Wait()
                 distance = (item.Position - humanoidRootPart.Position).magnitude
 
@@ -107,7 +108,7 @@ local function flyToCoins()
                     break
                 end
             end
-            wait(0.4)  -- Pequena pausa antes de ir para a próxima coin
+            wait(0.1)  -- Pequena pausa antes de ir para a próxima coin
         end
     end
 
@@ -116,39 +117,7 @@ local function flyToCoins()
     end
 end
 
--- Função para voar até LegendaryChest
-local function flyToLegendaryChest()
-    if not active then return end  -- Verificar se o código está ativo
-    local collectibles = game:GetService("Workspace"):GetDescendants()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    local flySpeed = 200  -- Velocidade do fly
-    local itemFound = false
 
-    for _, item in pairs(collectibles) do
-        if item.Name == "LegendaryChest" and item:IsA("BasePart") then
-            itemFound = true
-            print("Indo em direção ao LegendaryChest: ", item.Name)
-
-            -- Calcula a direção do fly em relação ao LegendaryChest
-            local direction = (item.Position - humanoidRootPart.Position).unit
-            local distance = (item.Position - humanoidRootPart.Position).magnitude
-
-            -- Move o personagem em direção ao LegendaryChest
-            while distance > 5 do  -- Aproxima-se até estar a 5 unidades de distância
-                humanoidRootPart.CFrame = humanoidRootPart.CFrame + direction * flySpeed * game:GetService("RunService").Heartbeat:Wait()
-                distance = (item.Position - humanoidRootPart.Position).magnitude
-            end
-            wait(0.1)  -- Pequena pausa antes de ir para o próximo item
-            backevent()
-        end
-    end
-
-    if not itemFound then
-        print("Nenhum LegendaryChest encontrado.")
-    end
-end
 
 local function teleportToCoinsAndThenLegendaryChest()
     if not active then return end  -- Verificar se o código está ativo
